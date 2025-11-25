@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Crear Nuevo Workout</title>
+</head>
+<body>
+  <h1>Crear Nuevo Workout</h1>
+  <form id="workoutForm">
+    <label for="name">Nombre:</label><br />
+    <input type="text" id="name" name="name" required /><br /><br />
+
+    <label for="mode">Modo:</label><br />
+    <input type="text" id="mode" name="mode" required /><br /><br />
+
+    <label for="equipment">Equipo (separado por comas):</label><br />
+    <input type="text" id="equipment" name="equipment" required /><br /><br />
+
+    <label for="exercises">Ejercicios (separado por comas):</label><br />
+    <input type="text" id="exercises" name="exercises" required /><br /><br />
+
+    <label for="trainerTips">Consejos del entrenador (separado por comas):</label><br />
+    <input type="text" id="trainerTips" name="trainerTips" required /><br /><br />
+
+    <button type="submit">Crear Workout</button>
+  </form>
+
+  <script>
+    document.getElementById('workoutForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const mode = document.getElementById('mode').value.trim();
+      const equipment = document.getElementById('equipment').value.split(',').map(e => e.trim());
+      const exercises = document.getElementById('exercises').value.split(',').map(e => e.trim());
+      const trainerTips = document.getElementById('trainerTips').value.split(',').map(e => e.trim());
+
+      fetch('http://localhost:3000/api/v1/workouts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name,
+          mode,
+          equipment,
+          exercises,
+          trainerTips
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert('Workout creado con éxito:\n' + JSON.stringify(data, null, 2));
+      })
+      .catch(error => {
+        alert('Error al crear workout: ' + error);
+      });
+    });
+  </script>
+</body>
+</html>
