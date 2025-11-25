@@ -5,6 +5,8 @@
 
 const express = require("express");
 
+const cors = require("cors");
+
 const v1WorkoutRouter = require("./v1/routes/workoutRoutes")
 
 const app = express();
@@ -16,7 +18,7 @@ const PORT = process.env.PORT || 3000;
 // Middlewares
 app.use(express.json());
 
-// app.use(cors());
+app.use(cors());
 
 
 // con esta linea se puede ordenar que escuche esta direccion http://localhost:3000/ y devuelva ese html
