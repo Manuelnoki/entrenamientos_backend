@@ -7,7 +7,17 @@ const workoutService = require("../services/workoutService");
 // peticion todos ********************************************* 
 const getAllWorkouts = (req, resp) => {
   
-  const { mode, limit } = req.query; // coger el parametro mode de la url si existe "va despues de la ?"
+ // coger el parametro mode de la url si existe "va despues de la ?"
+const { mode, limit, sortBy, order } = req.query;
+
+// pasar todos los parametros al service
+const allWorkout = workoutService.getAllWorkouts({ 
+  mode, 
+  limit, 
+  sortBy, 
+  order 
+});
+
   try {
     //console.log("aqui puedes ejecutar codigo, esto se imprime en consola")
     const allWorkout = workoutService.getAllWorkouts( { mode, limit } );
