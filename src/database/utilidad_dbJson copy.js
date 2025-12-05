@@ -40,13 +40,10 @@ const getAllWorkouts = (filterParams) => {
         throw { status: 400, message: "parametro order invalido en utilidad_dbJson" };
       }
 
-      // se parsean las fechas correctamente para evitar errores de comparacion
       workoutsPostFiltered = workoutsPostFiltered.sort((a, b) => {
         const A = new Date(a[sortBy]);
         const B = new Date(b[sortBy]);
 
-        // si las fechas son iguales se mantiene el orden por id para tener un orden determinista
-        if (A - B === 0) return a.id.localeCompare(b.id);
 
         if (order === "asc") return A - B;   //  antiguo a reciente
         else return B - A;                   //  reciente a antiguo
@@ -64,9 +61,12 @@ const getAllWorkouts = (filterParams) => {
       }
     }
 
+
+
     console.log("workoutsPostFiltered:", workoutsPostFiltered.length); // cantidad final de resultados en debug
     return workoutsPostFiltered; // retornar resultado final filtrado y limitado
     
+
     // FALTA PAGINAR RESULTADOS
 
   } catch (error) {
@@ -75,6 +75,7 @@ const getAllWorkouts = (filterParams) => {
     throw { status: 500, message: "error al leer los workouts desde el utilidad_dbJson" };
   }
 
+
   //METODO ANTERIOR SIN FILTRO
   /* try {
     return DB.workouts; 
@@ -82,8 +83,8 @@ const getAllWorkouts = (filterParams) => {
     console.error("error al obtener todos los workouts:", error);
     return { status: "error", message: "error al leer los workouts" };
   } */
-};
 
+};
 
 
 // este metodo devuelve el mapa de uno de los registros de la lista buscado por la key id  *****************************

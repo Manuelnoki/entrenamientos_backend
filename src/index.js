@@ -7,7 +7,7 @@ const express = require("express");
 
 const cors = require("cors");
 
-const v1WorkoutRouter = require("./v1/routes/workoutRoutes")
+const v1MainRouter = require("./v1/routes/mainRoutes")
 
 const app = express();
 
@@ -26,7 +26,7 @@ app.get("/", (req, resp) => {resp.send("<h1>Servidor básico funcionando \n\t\t\
 
 // esta linea llama al workoutRoutes.js que es quien contiene la declaracion de const router = express.Router();
 // es una clase para la escucha de rutas en las llamadas a la api para asignarle metodos
-app.use("/api/v1/workouts", v1WorkoutRouter);
+app.use("/api/v1", v1MainRouter);
 
 // esta linea hace la escucha en el puerto asignado
 // sin esta linea no escuchara el puerto y no hace nada. el console.log solo es informativo no es necesario evidentemente
@@ -35,7 +35,7 @@ app.listen(PORT, () => {
 })
 
 
-//========================================================================
+/*========================================================================
 
 
 // // index.js
@@ -69,5 +69,5 @@ app.listen(PORT, () => {
 
 // module.export = router;
 
-
+*/
 

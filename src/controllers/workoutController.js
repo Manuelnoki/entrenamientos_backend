@@ -74,7 +74,8 @@ const updateOneWorkout = (req, resp) => {
     const { workoutId } = req.params; // porque se ponen entre llaves esta declaracion
     const { body } = req;             // porque se ponen entre llaves esta declaracion  
 
-    JSON.parse(body); // Si no hay error, el JSON está bien formado
+    // req.body ya es un objeto JavaScript, no un string, gracias a que Express usa express.json()
+    // JSON.parse(body); // Si no hay error, el JSON está bien formado
  
 
     const updated = workoutService.updateOneWorkout(workoutId, body);

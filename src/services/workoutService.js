@@ -9,10 +9,6 @@ const { v4: uuid } = require("uuid");
 const UTILIDADDBJSON = require("../database/utilidad_dbJson");
 
 
-
-
-
-
 // ACTUALIZACION: FILTER devolver una lista con los que coincidan **************************************************************************************
 // devolver todos los workouts
 //**************************************************************************************************************************************************
@@ -27,14 +23,11 @@ const getAllWorkouts = (filterParams) => {
 };
 
 
-
-
-
 // devolver un workout por id pasado 
 //**************************************************************************************************************************************************
 const getOneWorkout = (workoutId) => {
   try {
-    const oneWorkout = UTILIDADDBJSON.getByIdWorkouts(workoutId);
+    const oneWorkout = UTILIDADDBJSON.getByIdWorkout(workoutId);
     return oneWorkout;
   } catch (error) {
     console.error("error al obtener workout:", error);
@@ -89,7 +82,7 @@ const deleteOneWorkout = (workoutId) => {
 // devolver una lista con todos los id existentes **************************************************************************************
 const getAllIdsWorkouts = () => {
   try {
-    const allIds = UTILIDADDBJSON.getAllIds();
+    const allIds = UTILIDADDBJSON.getAllWorkoutIds();
     return allIds;
   } catch (error) {
     console.error("error al obtener todos los ids de workouts:", error);
