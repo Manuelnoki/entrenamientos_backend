@@ -1,5 +1,6 @@
 // linea temporal
 // cliente → router → controller → service → database → service → controller → cliente
+// >>>>>>>>>********------------------------------------------------------------------
 
 const express = require("express");
 const apicache = require("apicache");

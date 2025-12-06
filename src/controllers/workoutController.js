@@ -4,30 +4,21 @@
 
 const workoutService = require("../services/workoutService");
 
-// peticion todos ********************************************* 
+// peticion todos *********************************************
 const getAllWorkouts = (req, resp) => {
-  
- // coger el parametro mode de la url si existe "va despues de la ?"
-const { mode, limit, sortBy, order } = req.query;
-
-// pasar todos los parametros al service
-const allWorkout = workoutService.getAllWorkouts({ 
-  mode, 
-  limit, 
-  sortBy, 
-  order 
-});
-
   try {
-    //console.log("aqui puedes ejecutar codigo, esto se imprime en consola")
-    const allWorkout = workoutService.getAllWorkouts( { mode, limit } );
-    //resp.send("get all workouts")
-    resp.status(200).send(allWorkout)
+    // normalizamos req.query por si vienen arrays u otros formatos
+    const filterParams = req.query || {};
+    const allWorkout = workoutService.getAllWorkouts(filterParams);
+    resp.status(200).send(allWorkout);
   } catch (error) {
     console.error("error al obtener todos los workouts:", error);
-    resp.status(500).send({ status: "error", message: "error al obtener los workouts desde el controller" });
+    const status = (error && error.status) ? error.status : 500;
+    const message = (error && error.message) ? error.message : "error al obtener los workouts desde el controller";
+    resp.status(status).send({ status: "error", message });
   }
 };
+
 
 // peticion uno por id ************************************************************************************
 const getOneWorkout = (req, resp) => {
@@ -86,7 +77,6 @@ const updateOneWorkout = (req, resp) => {
 
     // req.body ya es un objeto JavaScript, no un string, gracias a que Express usa express.json()
     // JSON.parse(body); // Si no hay error, el JSON está bien formado
- 
 
     const updated = workoutService.updateOneWorkout(workoutId, body);
 
@@ -120,7 +110,6 @@ const deleteWorkout = (req, resp) => {
   }
 }
 
-
 // coger todos los ids de los entrenamientos **********************************************************************
 const getAllIdsWorkouts = (req, resp) => {
       try { const allIds = workoutService.getAllIdsWorkouts();
@@ -130,7 +119,6 @@ const getAllIdsWorkouts = (req, resp) => {
         resp.status(500).send({ status: "error", message: "error al obtener los ids de los workouts en controller" });
       } 
 };
-
 
 
 module.exports = {

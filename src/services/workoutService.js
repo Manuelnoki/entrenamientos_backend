@@ -8,16 +8,17 @@ const { v4: uuid } = require("uuid");
 // crear una instancia de utilidad_dbjson "importa la clase utilidad_dbjson"
 const UTILIDADDBJSON = require("../database/utilidad_dbJson");
 
-
 // ACTUALIZACION: FILTER devolver una lista con los que coincidan **************************************************************************************
 // devolver todos los workouts
 //**************************************************************************************************************************************************
-const getAllWorkouts = (filterParams) => {
+const getAllWorkouts = (filterParams = {}) => { // cambio: valor por defecto {} para evitar undefined
   try {
     const allWorkouts = UTILIDADDBJSON.getAllWorkouts(filterParams);
     return allWorkouts;
   } catch (error) {
     console.error("error al obtener todos los workouts:", error);
+    // si utilidad lanza un error con status, lo dejamos propagar al controller
+    if (error && error.status) throw error;
     return { status: "error", message: "error al obtener los workouts desde el service" };
   }
 };
@@ -89,8 +90,6 @@ const getAllIdsWorkouts = () => {
     return { status: "error", message: "error al obtener los ids de los workouts en service" };
   }
 };
-
-
 
 // esta linea declara las constantes (funciones anonimas o flecha) se quieren exportar de este archivo
 module.exports = {
