@@ -134,63 +134,6 @@
         "memoriza los pasos entre objetos",
         "aprende lo que puedas"
       ],
-      "id": "25f7d42e-00aa-4517-a6bc-41e3be630b24",
-      "createdAt": "11/8/2025",
-      "updatedAt": "11/8/2025"
-    },
-    {
-      "name": "Manuel",
-      "mode": "empresario  exitoso 3",
-      "equipment": [
-        "visual studio"
-      ],
-      "exercises": [
-        "node express",
-        "post a backend"
-      ],
-      "trainerTips": [
-        "lee todo bien",
-        "memoriza los pasos entre objetos",
-        "aprende lo que puedas"
-      ],
-      "id": "a477ac86-6754-499b-9524-6910c7238a1d",
-      "createdAt": "11/8/2025",
-      "updatedAt": "11/28/2025, 8:11:33 PM"
-    },
-    {
-      "name": "Manuel",
-      "mode": "programador",
-      "equipment": [
-        "visual studio"
-      ],
-      "exercises": [
-        "node express",
-        "post a backend"
-      ],
-      "trainerTips": [
-        "lee todo bien",
-        "memoriza los pasos entre objetos",
-        "aprende lo que puedas"
-      ],
-      "id": "0b0c2a23-2550-4224-ac19-84fe2595b554",
-      "createdAt": "11/11/2025",
-      "updatedAt": "11/11/2025"
-    },
-    {
-      "name": "Manuel",
-      "mode": "programador",
-      "equipment": [
-        "visual studio"
-      ],
-      "exercises": [
-        "node express",
-        "post a backend"
-      ],
-      "trainerTips": [
-        "lee todo bien",
-        "memoriza los pasos entre objetos",
-        "aprende lo que puedas"
-      ],
       "id": "6266eb62-0d2e-4177-96c5-450745ad5d4b",
       "createdAt": "11/28/2025",
       "updatedAt": "11/28/2025"
