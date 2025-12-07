@@ -9,8 +9,10 @@ const getAllMembers = (req, resp) => {
   
   const { mode, limit } = req.query; // coger el parametro mode de la url si existe "va despues de la ?"
   try {
+    // normalizamos req.query por si vienen arrays u otros formatos
+    const filterParams = req.query || {};
     //console.log("aqui puedes ejecutar codigo, esto se imprime en consola")
-    const allMember = memberService.getAllMembers( { mode, limit } );
+    const allMember = memberService.getAllMembers( filterParams );
     //resp.send("get all members")
     resp.status(200).send(allMember)
   } catch (error) {

@@ -7,12 +7,13 @@ const DB = require("./db.json");
 
 
 // -------------------------------------------------------------
-// utilidades internas para filtrar y ordenar listas
+// utilidades para filtrar y ordenar listas
 // -------------------------------------------------------------
 
-const CAMPOS_ORDEN_VALIDOS = new Set(["createdAt", "updatedAt"]);
+const CAMPOS_ORDEN_VALIDOS_WORKOUT = new Set(["createdAt", "updatedAt"]);
+const CAMPOS_ORDEN_VALIDOS_MEMBER = new Set(["dateOfBirth"]);
 
-// normalizar parametro que puede venir como array
+// normalizar parametro que puede venir como array si lo repiten en query
 const normalizarParametroUnico = (valor) => {
   if (valor === undefined) return undefined;
   if (Array.isArray(valor)) return valor[0];
@@ -34,20 +35,52 @@ const parsearFechaSegura = (valorFecha) => {
   return Number.isFinite(timestamp) ? timestamp : null;
 };
 
-// ACTUALIZACION: FILTER devolver una lista con los que coincidan **************************************************************************************
+// parseo seguro de fechas dd/mm/yyyy
+const parsearFechaSeguraMiembros = (valorFecha) => {
+  if (!valorFecha) return null;
+
+  // acepta dd/mm/yyyy o d/m/yyyy, tambien admite espacios
+  const s = String(valorFecha).trim();
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) return null;
+
+  const dia = Number(m[1]);
+  const mes = Number(m[2]);
+  const anio = Number(m[3]);
+
+  // validaciones basicas
+  if (anio < 1000 || anio > 9999) return null;
+  if (mes < 1 || mes > 12) return null;
+  if (dia < 1) return null;
+
+  const fecha = new Date(anio, mes - 1, dia);
+  // comprobaremos que la fecha construida coincide con los valores (evita 31/02 -> marzo erróneo)
+  if (fecha.getFullYear() !== anio || (fecha.getMonth() + 1) !== mes || fecha.getDate() !== dia) {
+    return null;
+  }
+
+  const timestamp = fecha.getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+};
+
+
+
+// ACTUALIZACION: FILTER devolver una lista con los que coincidan ********************************
 // devolver todos los workouts
-//**************************************************************************************************************************************************
+//*************************************************************************************************
 const getAllWorkouts = (parametros = {}) => {
   try {
-    // normalizacion de parametros
+    // si vienen parametros repetidos en query, tomar solo el primero
     const modoBuscado = normalizarParametroUnico(parametros.mode);
-    const campoOrden = normalizarParametroUnico(parametros.sortBy);
+    const campoOrden =
+      normalizarParametroUnico(parametros.sortBy) ??
+      normalizarParametroUnico(parametros.sortby);
     const ordenElegido = normalizarParametroUnico(parametros.order);
     const limiteBruto = normalizarParametroUnico(parametros.limit);
 
     let workoutsFiltrados = DB.workouts || [];
 
-    // filtrar por modo
+    // filtrar por busqueda que incluya la cadena en modo
     if (modoBuscado !== undefined && modoBuscado !== null && String(modoBuscado).trim() !== "") {
       const modoNormalizado = String(modoBuscado).toLowerCase();
       workoutsFiltrados = workoutsFiltrados.filter(w => {
@@ -60,7 +93,7 @@ const getAllWorkouts = (parametros = {}) => {
     if (campoOrden !== undefined && campoOrden !== null && String(campoOrden).trim() !== "") {
       const campo = String(campoOrden);
 
-      if (!CAMPOS_ORDEN_VALIDOS.has(campo)) {
+      if (!CAMPOS_ORDEN_VALIDOS_WORKOUT.has(campo)) {
         throw { status: 400, message: "parametro sortBy invalido: usar createdAt o updatedAt" };
       }
 
@@ -131,7 +164,8 @@ const createNewWorkout = (workoutToInsert) => {
   }
 };
 
-// actualizar un registro por id *******************************************************************************************
+
+// actualizar un registro por id ****************************************************************************************
 const updateOneWorkout = (id, changes) => {
   try {
     const index = DB.workouts.findIndex(w => w.id === id);
@@ -154,7 +188,7 @@ const updateOneWorkout = (id, changes) => {
   }
 };
 
-// borrar un registro por id *********************************************************************************************
+// borrar un registro por id ********************************************************************************************
 const deleteOneWorkout = (id) => {
   try {
     const index = DB.workouts.findIndex(w => w.id === id);
@@ -172,7 +206,7 @@ const deleteOneWorkout = (id) => {
   }
 };
 
-// devolver una lista con todos los id existentes **********************************************************************************
+// devolver una lista con todos los id existentes ***********************************************************************
 const getAllWorkoutIds = () => {
   try {
     const allIds = DB.workouts.map(workout => workout.id);
@@ -183,7 +217,7 @@ const getAllWorkoutIds = () => {
   }
 };
 
-// metodo para guardar en disco duro la base de datos **********************************************************************************
+// metodo para guardar en disco duro la base de datos ******************************************************************
 const saveToDatabase = (DB) => {
   try {
     fs.writeFileSync(
@@ -197,83 +231,115 @@ const saveToDatabase = (DB) => {
 };
 
 /* A PARTIR DE AQUI TODOS LOS METODOS SON PARA LOS MEMBERS*/
-// ************************************************************************* 
-// ******  METODOS PARA MEMBERS  *********************************************
-// ************************************************************************* 
+// ********************************************************************************************************************* 
+// ******  METODOS PARA MEMBERS  ***************************************************************************************
+// ********************************************************************************************************************* 
 
-// metodo para filtrar y devolver todos los miembros ********************************************
-const getAllMembers = (filtros) => {
+// metodo para filtrar y devolver todos los miembros ******************************************************************
+const getAllMembers = (parametros) => {
   try {
+    const campoOrden =
+      normalizarParametroUnico(parametros.sortBy) ??
+      normalizarParametroUnico(parametros.sortby);
+    const ordenElegido = normalizarParametroUnico(parametros.order);
+    const limiteBruto = normalizarParametroUnico(parametros.limit);
 
+    console.log("filterParams en utilidad:", parametros);
     // lista original de miembros en memoria
     let miembrosFiltrados = DB.members;
 
     // filtro por nombre (coincidencia parcial)
-    if (filtros.nombre) {
-      const nombreBuscado = String(filtros.nombre).toLowerCase();
+    if (parametros.name) {
+      const nombreBuscado = String(parametros.name).toLowerCase();
       miembrosFiltrados = miembrosFiltrados.filter(
         (m) => m.name.toLowerCase().includes(nombreBuscado)
       );
     }
 
     // filtro por genero (male o female)
-    if (filtros.genero) {
-      const generoBuscado = String(filtros.genero).toLowerCase();
+    if (parametros.gender) {
+      const generoBuscado = String(parametros.gender).toLowerCase();
       miembrosFiltrados = miembrosFiltrados.filter(
         (m) => m.gender.toLowerCase() === generoBuscado
       );
     }
 
     // filtro por email (coincidencia parcial)
-    if (filtros.correo) {
-      const correoBuscado = String(filtros.correo).toLowerCase();
+    if (parametros.email) {
+      const correoBuscado = String(parametros.email).toLowerCase();
       miembrosFiltrados = miembrosFiltrados.filter(
         (m) => m.email.toLowerCase().includes(correoBuscado)
       );
     }
 
     // filtro por fecha de nacimiento exacta (dd/mm/yyyy)
-    if (filtros.fechaNacimiento) {
+    if (parametros.dateOfBirth) {
       miembrosFiltrados = miembrosFiltrados.filter(
-        (m) => m.dateOfBirth === filtros.fechaNacimiento
+        (m) => m.dateOfBirth === parametros.dateOfBirth
       );
     }
 
-    // ordenacion por createdAt o updatedAt
-    if (filtros.ordenarPor) {
-      const campoOrden = filtros.ordenarPor;
 
-      // validar campo
-      if (!["createdAt", "updatedAt"].includes(campoOrden)) {
-        throw { status: 400, message: "parametro ordenarPor invalido en members" };
+    // ordenar por fecha dateOfBirth
+
+    // console.log("llega a ordenar por dateOfBirth");
+
+    if (campoOrden !== undefined && campoOrden !== null && String(campoOrden).trim() !== "") {
+      const campo = String(campoOrden);
+
+      // valida que el campo sea exactamente el que aceptas
+      if (!CAMPOS_ORDEN_VALIDOS_MEMBER.has(campo)) {
+        throw { status: 400, message: "parametro sortBy invalido: usar solo dateOfBirth" };
       }
 
-      // orden por defecto descendente
-      let orden = filtros.orden ? String(filtros.orden).toLowerCase() : "desc";
-
-      if (!["asc", "desc"].includes(orden)) {
-        throw { status: 400, message: "parametro orden invalido" };
+      let direccion = ordenElegido ? String(ordenElegido).toLowerCase() : "desc";
+      if (direccion !== "asc" && direccion !== "desc") {
+        throw { status: 400, message: "parametro order invalido: usar asc o desc" };
       }
 
-      // conversion a timestamp
-      miembrosFiltrados = miembrosFiltrados.sort((a, b) => {
-        const tiempoA = new Date(a[campoOrden]).getTime();
-        const tiempoB = new Date(b[campoOrden]).getTime();
+      miembrosFiltrados = miembrosFiltrados.slice(); // evitar mutar db original
 
-        if (orden === "asc") return tiempoA - tiempoB;
-        else return tiempoB - tiempoA;
+      //console.log("antes ordenar:", miembrosFiltrados.map(m => ({ id: m.id, dateOfBirth: m.dateOfBirth })));
+
+      miembrosFiltrados.sort((a, b) => {
+        const fechaA = parsearFechaSeguraMiembros(a && a[campo]);
+        const fechaB = parsearFechaSeguraMiembros(b && b[campo]);
+
+        // debug: imprime timestamps para verificar
+        // console.log(a.id, a[campo], fechaA, " | ", b.id, b[campo], fechaB);
+
+        // si una fecha es null la situamos al final:
+        // - en asc: null -> +infinito (asi quedan al final)
+        // - en desc: null -> -infinito (asi quedan al final)
+        const inf = Number.POSITIVE_INFINITY;
+        const ninf = Number.NEGATIVE_INFINITY;
+
+        const tiempoA = (fechaA === null) ? (direccion === "asc" ? inf : ninf) : fechaA;
+        const tiempoB = (fechaB === null) ? (direccion === "asc" ? inf : ninf) : fechaB;
+
+        if (tiempoA === tiempoB) return 0;
+        // para asc: menor primero
+        if (direccion === "asc") return tiempoA - tiempoB;
+        // para desc: mayor primero
+        return tiempoB - tiempoA;
       });
+
+      // console.log("despues ordenar:", miembrosFiltrados.map(m => ({ id: m.id, dateOfBirth: m.dateOfBirth })));
     }
 
-    // filtro limit (siempre al final)
-    if (filtros.limite !== undefined) {
-      const limite = Number(filtros.limite);
-      if (!isNaN(limite) && limite > 0) {
-        miembrosFiltrados = miembrosFiltrados.slice(0, limite);
-      } else {
-        throw { status: 400, message: "parametro limite invalido" };
+
+    // console.log("llega a limite");
+    // aplicar limite final
+    if (limiteBruto !== undefined) {
+      const limite = convertirEnteroPositivo(limiteBruto);
+      if (Number.isNaN(limite)) {
+        throw { status: 400, message: "parametro limit invalido: debe ser entero positivo" };
       }
+      miembrosFiltrados = miembrosFiltrados.slice(0, limite);
     }
+
+
+
 
     // debug
     console.log("miembros filtrados:", miembrosFiltrados.length);
@@ -303,8 +369,8 @@ const createNewMember = (memberToInsert) => {
     const memberExists = DB.members.find(member => member.id === memberToInsert.id);
 
     if (!memberExists) {
-      DB.members.push(memberToInsert); 
-      saveToDatabase(DB); 
+      DB.members.push(memberToInsert);
+      saveToDatabase(DB);
       console.log("el nuevo objeto se ha guardado en ram y disco");
       return memberToInsert;
     } else {
@@ -317,7 +383,7 @@ const createNewMember = (memberToInsert) => {
   }
 };
 
-// actualizar un registro por id *******************************************************************************************
+// actualizar un registro por id ****************************************************************************************
 const updateOneMember = (id, changes) => {
   try {
     const index = DB.members.findIndex(w => w.id === id);
@@ -356,7 +422,7 @@ const deleteOneMember = (id) => {
   }
 };
 
-// devolver una lista con todos los id existentes **********************************************************************************
+// devolver una lista con todos los id existentes **********************************************************************
 const getAllMemberIds = () => {
   try {
     const allIds = DB.members.map(member => member.id);
